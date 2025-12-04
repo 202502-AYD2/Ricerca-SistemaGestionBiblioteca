@@ -1,5 +1,18 @@
 # 🚀 Sistema Completo de Gestión de Biblioteca
 
+Integrantes del equipo:
+
+Sarah Yauripoma Cano - C.C. 1013338862
+
+Angelo Gallego López - C.C. 1107838887
+
+Valentina Hoyos Castrillón - C.C. 1034917822
+
+Andres Felipe Bernal Molina - C.C. 1023624342
+
+Juan Pablo Herrera Jaramillo - C.C. 1022143677
+
+
 Sistema completo con Backend (Node.js + Express), Frontend (Next.js), y Base de Datos (Supabase/PostgreSQL).
 
 ## 📦 Contenido del Paquete
