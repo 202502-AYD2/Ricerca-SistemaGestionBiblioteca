@@ -1,21 +1,35 @@
-import express from "express";
+import express from 'express'
+import { body } from 'express-validator'
 import {
   getPrestamos,
-  getPrestamoById,
   createPrestamo,
-  updatePrestamo,
+  devolverPrestamo,
+  getPrestamosVencidos,
   deletePrestamo
-} from "../controllers/prestamosController.js";
-import { authenticateToken, requireAdmin } from "../middleware/auth.js";
+} from '../controllers/prestamosController.js'
+import { authenticateToken, requireAdmin } from '../middleware/auth.js'
 
-const router = express.Router();
+const router = express.Router()
 
-router.use(authenticateToken);
+router.use(authenticateToken)
 
-router.get("/", getPrestamos);
-router.get("/:id", getPrestamoById);
-router.post("/", requireAdmin, createPrestamo);
-router.put("/:id", updatePrestamo);
-router.delete("/:id", requireAdmin, deletePrestamo);
+// USER y ADMIN pueden ver préstamos y crear
+router.get('/', getPrestamos)
+router.get('/vencidos', getPrestamosVencidos)
+router.post(
+  '/',
+  [
+    body('libro_id').isInt().withMessage('ID de libro inválido'),
+    body('usuario_id').isUUID().withMessage('ID de usuario inválido'),
+    body('fecha_devolucion').isDate().withMessage('Fecha inválida')
+  ],
+  createPrestamo
+)
 
-export default router;
+// USER y ADMIN pueden devolver
+router.put('/:id/devolver', devolverPrestamo)
+
+// Solo ADMIN puede eliminar
+router.delete('/:id', requireAdmin, deletePrestamo)
+
+export default router

@@ -1,22 +1,38 @@
-import express from "express";
-import { authenticateToken, requireAdmin } from "../middleware/auth.js";
+import express from 'express'
+import { body } from 'express-validator'
 import {
   getLibros,
   getLibroById,
   createLibro,
   updateLibro,
-  deleteLibro
-} from "../controllers/librosController.js";
+  deleteLibro,
+  searchLibros
+} from '../controllers/librosController.js'
+import { authenticateToken, requireAdmin } from '../middleware/auth.js'
 
-const router = express.Router();
+const router = express.Router()
 
-router.use(authenticateToken);
+// Todas las rutas requieren autenticación
+router.use(authenticateToken)
 
-router.get("/", getLibros);
-router.get("/:id", getLibroById);
+// USER y ADMIN pueden ver libros
+router.get('/', getLibros)
+router.get('/search', searchLibros)
+router.get('/:id', getLibroById)
 
-router.post("/", requireAdmin, createLibro);
-router.put("/:id", requireAdmin, updateLibro);
-router.delete("/:id", requireAdmin, deleteLibro);
+// Solo ADMIN puede crear, actualizar y eliminar
+router.post(
+  '/',
+  requireAdmin,
+  [
+    body('titulo').notEmpty().withMessage('El título es requerido'),
+    body('autor').notEmpty().withMessage('El autor es requerido'),
+    body('cantidad').optional().isInt({ min: 0 })
+  ],
+  createLibro
+)
 
-export default router;
+router.put('/:id', requireAdmin, updateLibro)
+router.delete('/:id', requireAdmin, deleteLibro)
+
+export default router

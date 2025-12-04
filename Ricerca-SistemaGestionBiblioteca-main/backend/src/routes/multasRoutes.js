@@ -1,31 +1,36 @@
-import express from "express";
+import express from 'express'
+import { body } from 'express-validator'
 import {
   getMultas,
-  getMultaById,
   createMulta,
-  updateMulta,
+  pagarMulta,
+  getMultasStats,
+  generarMultasAutomaticas,
   deleteMulta
-} from "../controllers/multasController.js";
-import { authenticateToken, requireAdmin } from "../middleware/auth.js";
+} from '../controllers/multasController.js'
+import { authenticateToken, requireAdmin } from '../middleware/auth.js'
 
-const router = express.Router();
+const router = express.Router()
 
-// Todas las rutas requieren autenticación
-router.use(authenticateToken);
+router.use(authenticateToken)
 
-// GET /api/multas
-router.get("/", getMultas);
+// ADMIN y USER pueden ver multas
+router.get('/', getMultas)
+router.get('/stats', getMultasStats)
 
-// GET /api/multas/:id
-router.get("/:id", getMultaById);
+// Solo ADMIN puede crear, pagar, generar y eliminar
+router.post(
+  '/',
+  requireAdmin,
+  [
+    body('prestamo_id').isInt().withMessage('ID de préstamo inválido'),
+    body('monto').isFloat({ min: 0 }).withMessage('Monto inválido')
+  ],
+  createMulta
+)
 
-// POST /api/multas (solo admin)
-router.post("/", requireAdmin, createMulta);
+router.put('/:id/pagar', requireAdmin, pagarMulta)
+router.post('/generar-automaticas', requireAdmin, generarMultasAutomaticas)
+router.delete('/:id', requireAdmin, deleteMulta)
 
-// PUT /api/multas/:id (solo admin)
-router.put("/:id", requireAdmin, updateMulta);
-
-// DELETE /api/multas/:id (solo admin)
-router.delete("/:id", requireAdmin, deleteMulta);
-
-export default router;
+export default router

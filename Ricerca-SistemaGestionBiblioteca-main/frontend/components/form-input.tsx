@@ -12,6 +12,9 @@ interface FormInputProps {
   required?: boolean
   disabled?: boolean
   error?: string
+  min?: string | number
+  max?: string | number
+  step?: string | number
 }
 
 export function FormInput({
@@ -24,6 +27,9 @@ export function FormInput({
   required = false,
   disabled = false,
   error,
+  min,
+  max,
+  step,
 }: FormInputProps) {
   return (
     <div className="space-y-2">
@@ -39,6 +45,9 @@ export function FormInput({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
+        min={min}
+        max={max}
+        step={step}
         className={error ? "border-destructive" : ""}
       />
       {error && <p className="text-sm text-destructive">{error}</p>}
