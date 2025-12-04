@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
 
 // Cargar variables de entorno
-dotenv.config()
+dotenv.config({ path: '.env.example' })
 
 // Validar que las variables de entorno estén configuradas
 if (!process.env.SUPABASE_URL) {
