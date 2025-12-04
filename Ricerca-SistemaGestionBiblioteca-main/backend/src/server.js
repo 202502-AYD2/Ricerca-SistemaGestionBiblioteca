@@ -130,10 +130,11 @@ app.listen(PORT, () => {
 app.use(cors({
   origin: [
     'http://localhost:3000',
-    'https://ricerca-sistemagestionbiblioteca-uvdw.onrender.com', // Tu URL de frontend
+    'https://ricerca-sistemagestionbiblioteca-uvdw.onrender.com',
     process.env.FRONTEND_URL
   ].filter(Boolean),
-  credentials: true
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization']
 }))
 
 export default app

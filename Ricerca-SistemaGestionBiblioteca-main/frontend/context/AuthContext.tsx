@@ -1,25 +1,21 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { useRouter } from "next/navigation"
-import { api } from "@/lib/api/client"
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
+import { api } from '@/lib/api/client'
 
-export type UserRole = "ADMIN" | "USER"
-
-export interface User {
+interface User {
   id: string
   email: string
   name: string
-  role: UserRole
-  avatarUrl: string | null
+  role: 'ADMIN' | 'USER'
 }
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  logout: () => Promise<void>
-  isAuthenticated: boolean
+  login: (email: string, password: string) => Promise<void>
+  logout: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -30,59 +26,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    // Verificar si hay un token guardado
-    const checkAuth = async () => {
-      const token = localStorage.getItem('authToken')
-      if (token) {
-        try {
-          const response = await api.getCurrentUser()
-          setUser(response.data)
-        } catch (error) {
-          localStorage.removeItem('authToken')
-        }
-      }
-      setLoading(false)
-    }
-
     checkAuth()
   }, [])
 
+  const checkAuth = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        setLoading(false)
+        return
+      }
+
+      const response = await api.getCurrentUser()
+      setUser(response.data)
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      localStorage.removeItem('token')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const login = async (email: string, password: string) => {
-    setLoading(true)
     try {
       const response = await api.login(email, password)
       
-      // Guardar token
-      localStorage.setItem('authToken', response.data.token)
+      // CRÍTICO: Guardar el token
+      if (response.token) {
+        localStorage.setItem('token', response.token)
+      }
       
       // Guardar usuario
-      setUser(response.data.user)
-      
-      setLoading(false)
-      return { success: true }
-    } catch (error: any) {
-      setLoading(false)
-      return { 
-        success: false, 
-        error: error.message || 'Error al iniciar sesión' 
+      if (response.user) {
+        setUser(response.user)
       }
+      
+      // Redirigir al dashboard
+      router.push('/transacciones')
+    } catch (error: any) {
+      console.error('Login failed:', error)
+      throw new Error(error.message || 'Error al iniciar sesión')
     }
   }
 
-  const logout = async () => {
-    try {
-      await api.logout()
-    } catch (error) {
-      console.error('Error during logout:', error)
-    }
-    
-    localStorage.removeItem('authToken')
+  const logout = () => {
+    localStorage.removeItem('token')
     setUser(null)
-    router.push("/login")
+    router.push('/login')
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
@@ -90,8 +84,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
 }
