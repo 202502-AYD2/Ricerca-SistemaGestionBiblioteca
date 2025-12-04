@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+const API_URL = 'https://ricerca-sistemagestionbiblioteca-backend.onrender.com'
 
 // Helper para hacer peticiones autenticadas
 async function fetchAPI(endpoint, options = {}) {
