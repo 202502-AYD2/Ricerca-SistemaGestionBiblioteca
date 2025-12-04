@@ -131,6 +131,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'https://ricerca-sistemagestionbiblioteca-uvdw.onrender.com',
+    'https://ricerca-sistemagestionbiblioteca-frontend.onrender.com',
     process.env.FRONTEND_URL
   ].filter(Boolean),
   credentials: true,
