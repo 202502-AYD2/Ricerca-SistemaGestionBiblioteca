@@ -127,5 +127,13 @@ app.listen(PORT, () => {
   console.log('  PUT    /api/users/:id/role')
   console.log('========================================')
 })
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://ricerca-sistemagestionbiblioteca-uvdw.onrender.com', // Tu URL de frontend
+    process.env.FRONTEND_URL
+  ].filter(Boolean),
+  credentials: true
+}))
 
 export default app
