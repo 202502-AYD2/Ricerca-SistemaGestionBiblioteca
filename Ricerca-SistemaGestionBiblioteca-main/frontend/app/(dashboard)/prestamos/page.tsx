@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/context/AuthContext"
-import { RoleGuard } from "@/components/role-guard"
 import { DataTable } from "@/components/data-table"
 import { Modal } from "@/components/modal"
 import { FormInput } from "@/components/form-input"
@@ -23,12 +22,6 @@ interface Libro {
   cantidad: number
 }
 
-interface User {
-  id: string
-  name: string
-  email: string
-}
-
 interface Prestamo {
   id: number
   libro_id: number
@@ -45,7 +38,6 @@ export default function PrestamosPage() {
   const { toast } = useToast()
   const [prestamos, setPrestamos] = useState<Prestamo[]>([])
   const [libros, setLibros] = useState<Libro[]>([])
-  const [usuarios, setUsuarios] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -54,7 +46,6 @@ export default function PrestamosPage() {
   // Form state
   const [formData, setFormData] = useState({
     libro_id: "",
-    usuario_id: "",
     fecha_devolucion: "",
   })
 
@@ -66,20 +57,13 @@ export default function PrestamosPage() {
     try {
       setLoading(true)
       setError(null)
-      const [prestamosRes, librosRes, usersRes] = await Promise.all([
+      const [prestamosRes, librosRes] = await Promise.all([
         api.getPrestamos(),
-        api.getLibros(),
-        api.getUsers()
+        api.getLibros()
       ])
       
       setPrestamos(prestamosRes.data)
       setLibros(librosRes.data.filter((l: Libro) => l.cantidad > 0)) // Solo libros disponibles
-      setUsuarios(usersRes.data)
-      
-      // Si es USER, preseleccionar su ID
-      if (user?.role === 'USER') {
-        setFormData(prev => ({ ...prev, usuario_id: user.id }))
-      }
     } catch (err: any) {
       console.error('Error loading data:', err)
       setError(err.message || "Error al cargar los datos")
@@ -89,15 +73,18 @@ export default function PrestamosPage() {
   }
 
   const handleCreatePrestamo = async () => {
+    if (!user) return
+
     try {
       setIsCreating(true)
       
       // Calcular fecha de préstamo (hoy)
       const fechaPrestamo = new Date().toISOString().split('T')[0]
       
+      // El USER siempre crea el préstamo para sí mismo
       await api.createPrestamo({
         libro_id: parseInt(formData.libro_id),
-        usuario_id: formData.usuario_id,
+        usuario_id: user.id, // Siempre el ID del USER logueado
         fecha_prestamo: fechaPrestamo,
         fecha_devolucion: formData.fecha_devolucion
       })
@@ -112,11 +99,7 @@ export default function PrestamosPage() {
       })
 
       setIsModalOpen(false)
-      setFormData({ 
-        libro_id: "", 
-        usuario_id: user?.role === 'USER' ? user.id : "", 
-        fecha_devolucion: "" 
-      })
+      setFormData({ libro_id: "", fecha_devolucion: "" })
     } catch (err: any) {
       console.error('Error creating prestamo:', err)
       toast({
@@ -243,88 +226,96 @@ export default function PrestamosPage() {
   if (error) return <ErrorState message={error} onRetry={loadData} />
 
   return (
-    <RoleGuard allowedRoles={["ADMIN", "USER"]}>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Préstamos</h1>
-            <p className="text-muted-foreground mt-1">Gestión de préstamos de libros</p>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Préstamos</h1>
+          <p className="text-muted-foreground mt-1">
+            {user?.role === 'USER' 
+              ? 'Solicita préstamos de libros disponibles' 
+              : 'Gestión de préstamos de libros'}
+          </p>
+        </div>
+        {/* SOLO USER puede crear préstamos */}
+        {user?.role === "USER" && (
           <Button onClick={() => setIsModalOpen(true)} size="lg" className="gap-2">
             <Plus className="h-5 w-5" />
             Nuevo Préstamo
           </Button>
-        </div>
+        )}
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Préstamos</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{prestamos.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Activos</CardTitle>
-              <XCircle className="h-4 w-4 text-orange-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
-                {prestamos.filter(p => !p.devuelto).length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Devueltos</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-500" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {prestamos.filter(p => p.devuelto).length}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Prestamos Table */}
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <CardHeader>
-            <CardTitle>Historial de Préstamos</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Préstamos</CardTitle>
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <DataTable 
-              columns={columns} 
-              data={prestamos} 
-              emptyMessage="No hay préstamos registrados" 
-            />
+            <div className="text-2xl font-bold">{prestamos.length}</div>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Activos</CardTitle>
+            <XCircle className="h-4 w-4 text-orange-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">
+              {prestamos.filter(p => !p.devuelto).length}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Devueltos</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {prestamos.filter(p => p.devuelto).length}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* Create Prestamo Modal */}
+      {/* Prestamos Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Historial de Préstamos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DataTable 
+            columns={columns} 
+            data={prestamos} 
+            emptyMessage="No hay préstamos registrados" 
+          />
+        </CardContent>
+      </Card>
+
+      {/* Create Prestamo Modal - SOLO PARA USER */}
+      {user?.role === "USER" && (
         <Modal
           open={isModalOpen}
           onOpenChange={setIsModalOpen}
           title="Nuevo Préstamo"
-          description="Registrar un nuevo préstamo de libro"
+          description="Solicitar un préstamo de libro"
           onConfirm={handleCreatePrestamo}
           onCancel={() => {
             setIsModalOpen(false)
-            setFormData({ 
-              libro_id: "", 
-              usuario_id: user?.role === 'USER' ? user.id : "", 
-              fecha_devolucion: "" 
-            })
+            setFormData({ libro_id: "", fecha_devolucion: "" })
           }}
-          confirmText="Crear Préstamo"
+          confirmText="Solicitar Préstamo"
           loading={isCreating}
-          confirmDisabled={!formData.libro_id || !formData.usuario_id || !formData.fecha_devolucion}
+          confirmDisabled={!formData.libro_id || !formData.fecha_devolucion}
         >
           <div className="space-y-4">
+            <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+              <p><strong>Solicitante:</strong> {user.name}</p>
+              <p className="text-xs mt-1">{user.email}</p>
+            </div>
+
             <FormSelect
               id="libro"
               label="Libro"
@@ -336,27 +327,6 @@ export default function PrestamosPage() {
               }))}
               required
             />
-            
-            {user?.role === "ADMIN" && (
-              <FormSelect
-                id="usuario"
-                label="Usuario"
-                value={formData.usuario_id}
-                onChange={(value) => setFormData({ ...formData, usuario_id: value })}
-                options={usuarios.map((usuario) => ({ 
-                  value: usuario.id, 
-                  label: `${usuario.name} (${usuario.email})` 
-                }))}
-                required
-              />
-            )}
-
-            {user?.role === "USER" && (
-              <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
-                <p><strong>Solicitante:</strong> {user.name}</p>
-                <p className="text-xs mt-1">{user.email}</p>
-              </div>
-            )}
 
             <FormInput
               id="fecha_devolucion"
@@ -375,7 +345,21 @@ export default function PrestamosPage() {
             </div>
           </div>
         </Modal>
-      </div>
-    </RoleGuard>
+      )}
+
+      {/* Mensaje para ADMIN */}
+      {user?.role === "ADMIN" && prestamos.length === 0 && (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-10">
+            <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground text-center">
+              Los préstamos son creados por los usuarios.
+              <br />
+              Como administrador, puedes ver y gestionar todos los préstamos.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   )
 }

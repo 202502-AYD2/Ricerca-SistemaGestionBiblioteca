@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/context/AuthContext"
-import { RoleGuard } from "@/components/role-guard"
 import { DataTable } from "@/components/data-table"
 import { Modal } from "@/components/modal"
 import { FormInput } from "@/components/form-input"
@@ -207,133 +206,131 @@ export default function MultasPage() {
   if (error) return <ErrorState message={error} onRetry={loadData} />
 
   return (
-    <RoleGuard allowedRoles={["ADMIN", "USER"]}>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Multas</h1>
-            <p className="text-muted-foreground mt-1">Gestión de multas por retrasos y daños</p>
-          </div>
-          {user?.role === "ADMIN" && (
-            <Button onClick={() => setIsModalOpen(true)} size="lg" className="gap-2">
-              <Plus className="h-5 w-5" />
-              Nueva Multa
-            </Button>
-          )}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Multas</h1>
+          <p className="text-muted-foreground mt-1">Gestión de multas por retrasos y daños</p>
         </div>
-
-        {/* Stats Cards */}
-        {stats && (
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Multas</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total}</div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-orange-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">{stats.pendientes}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  ${stats.monto_pendiente.toFixed(2)}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pagadas</CardTitle>
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">{stats.pagadas}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  ${stats.monto_recaudado.toFixed(2)}
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Monto Total</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ${stats.monto_total.toFixed(2)}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Multas Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Historial de Multas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable 
-              columns={columns} 
-              data={multas} 
-              emptyMessage="No hay multas registradas" 
-            />
-          </CardContent>
-        </Card>
-
-        {/* Create Multa Modal - Only for ADMIN */}
         {user?.role === "ADMIN" && (
-          <Modal
-            open={isModalOpen}
-            onOpenChange={setIsModalOpen}
-            title="Nueva Multa"
-            description="Registrar una nueva multa"
-            onConfirm={handleCreateMulta}
-            onCancel={() => {
-              setIsModalOpen(false)
-              setFormData({ prestamo_id: "", monto: "" })
-            }}
-            confirmText="Crear Multa"
-            loading={isCreating}
-            confirmDisabled={!formData.prestamo_id || !formData.monto}
-          >
-            <div className="space-y-4">
-              <FormSelect
-                id="prestamo"
-                label="Préstamo"
-                value={formData.prestamo_id}
-                onChange={(value) => setFormData({ ...formData, prestamo_id: value })}
-                options={prestamos.map((prestamo) => ({ 
-                  value: prestamo.id.toString(), 
-                  label: `${prestamo.libros?.titulo || 'N/A'} - ${prestamo.users?.name || 'N/A'}` 
-                }))}
-                required
-              />
-
-              <FormInput
-                id="monto"
-                label="Monto de la Multa"
-                type="number"
-                value={formData.monto}
-                onChange={(value) => setFormData({ ...formData, monto: value })}
-                placeholder="0.00"
-                required
-                min="0"
-                step="0.01"
-              />
-
-              <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-950 p-3 rounded-lg">
-                <strong>Nota:</strong> La multa se creará con fecha de hoy y estará pendiente de pago.
-              </div>
-            </div>
-          </Modal>
+          <Button onClick={() => setIsModalOpen(true)} size="lg" className="gap-2">
+            <Plus className="h-5 w-5" />
+            Nueva Multa
+          </Button>
         )}
       </div>
-    </RoleGuard>
+
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Multas</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.total}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{stats.pendientes}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                ${stats.monto_pendiente.toFixed(2)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pagadas</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{stats.pagadas}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                ${stats.monto_recaudado.toFixed(2)}
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Monto Total</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ${stats.monto_total.toFixed(2)}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Multas Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Historial de Multas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DataTable 
+            columns={columns} 
+            data={multas} 
+            emptyMessage="No hay multas registradas" 
+          />
+        </CardContent>
+      </Card>
+
+      {/* Create Multa Modal - Only for ADMIN */}
+      {user?.role === "ADMIN" && (
+        <Modal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          title="Nueva Multa"
+          description="Registrar una nueva multa"
+          onConfirm={handleCreateMulta}
+          onCancel={() => {
+            setIsModalOpen(false)
+            setFormData({ prestamo_id: "", monto: "" })
+          }}
+          confirmText="Crear Multa"
+          loading={isCreating}
+          confirmDisabled={!formData.prestamo_id || !formData.monto}
+        >
+          <div className="space-y-4">
+            <FormSelect
+              id="prestamo"
+              label="Préstamo"
+              value={formData.prestamo_id}
+              onChange={(value) => setFormData({ ...formData, prestamo_id: value })}
+              options={prestamos.map((prestamo) => ({ 
+                value: prestamo.id.toString(), 
+                label: `${prestamo.libros?.titulo || 'N/A'} - ${prestamo.users?.name || 'N/A'}` 
+              }))}
+              required
+            />
+
+            <FormInput
+              id="monto"
+              label="Monto de la Multa"
+              type="number"
+              value={formData.monto}
+              onChange={(value) => setFormData({ ...formData, monto: value })}
+              placeholder="0.00"
+              required
+              min="0"
+              step="0.01"
+            />
+
+            <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-950 p-3 rounded-lg">
+              <strong>Nota:</strong> La multa se creará con fecha de hoy y estará pendiente de pago.
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
   )
 }
