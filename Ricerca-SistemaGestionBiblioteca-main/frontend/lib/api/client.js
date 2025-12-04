@@ -1,126 +1,172 @@
-const API_URL = 'https://ricerca-sistemagestionbiblioteca-backend.onrender.com'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
-// Helper para hacer peticiones autenticadas
-async function fetchAPI(endpoint, options = {}) {
-  const token = localStorage.getItem('authToken')
+const getAuthToken = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('token')
+  }
+  return null
+}
+
+const fetchAPI = async (endpoint, options = {}) => {
+  const token = getAuthToken()
   
   const headers = {
     'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` }),
+    ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  })
+  const url = `${API_BASE_URL}${endpoint}`
 
-  const data = await response.json()
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    })
 
-  if (!response.ok) {
-    throw new Error(data.error || 'Error en la petición')
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('API Error:', error)
+    throw error
   }
-
-  return data
 }
 
 export const api = {
-  // Auth
-  login: (email, password) => 
-    fetchAPI('/auth/login', {
+  // ==========================================
+  // AUTH
+  // ==========================================
+  
+  login: (email, password) =>
+    fetchAPI('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password })
     }),
-  
-  logout: () => 
-    fetchAPI('/auth/logout', { method: 'POST' }),
-  
-  getCurrentUser: () => 
-    fetchAPI('/auth/me'),
 
-  // Maestros
-  getMaestros: () => 
-    fetchAPI('/maestros'),
-  
-  createMaestro: (nombre, saldoInicial) => 
-    fetchAPI('/maestros', {
+  register: (userData) =>
+    fetchAPI('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ nombre, saldoInicial })
+      body: JSON.stringify(userData)
     }),
 
-  // Movimientos
-  getMovements: (maestroId) => 
-    fetchAPI(`/movements${maestroId ? `?maestroId=${maestroId}` : ''}`),
-  
-  createMovement: (maestroId, maestroNombre, tipo, cantidad) => 
-    fetchAPI('/movements', {
+  getCurrentUser: () => fetchAPI('/api/auth/me'),
+
+  // ==========================================
+  // MAESTROS
+  // ==========================================
+
+  getMaestros: () => fetchAPI('/api/maestros'),
+
+  getMaestroById: (id) => fetchAPI(`/api/maestros/${id}`),
+
+  createMaestro: (maestro) =>
+    fetchAPI('/api/maestros', {
       method: 'POST',
-      body: JSON.stringify({ maestroId, maestroNombre, tipo, cantidad })
+      body: JSON.stringify(maestro)
     }),
 
-  getDailyBalances: (maestroId, days = 30) =>
-    fetchAPI(`/movements/daily-balances/${maestroId}?days=${days}`),
+  updateMaestro: (id, updates) =>
+    fetchAPI(`/api/maestros/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    }),
 
-  // Usuarios
-  getUsers: () => 
-    fetchAPI('/users'),
-  
-  updateUserRole: (userId, role) => 
-    fetchAPI(`/users/${userId}/role`, {
+  deleteMaestro: (id) =>
+    fetchAPI(`/api/maestros/${id}`, {
+      method: 'DELETE'
+    }),
+
+  // ==========================================
+  // MOVEMENTS
+  // ==========================================
+
+  getMovements: (filters = {}) => {
+    const params = new URLSearchParams(filters).toString()
+    return fetchAPI(`/api/movements${params ? `?${params}` : ''}`)
+  },
+
+  getMovementById: (id) => fetchAPI(`/api/movements/${id}`),
+
+  createMovement: (movement) =>
+    fetchAPI('/api/movements', {
+      method: 'POST',
+      body: JSON.stringify(movement)
+    }),
+
+  deleteMovement: (id) =>
+    fetchAPI(`/api/movements/${id}`, {
+      method: 'DELETE'
+    }),
+
+  // ==========================================
+  // USERS
+  // ==========================================
+
+  getUsers: () => fetchAPI('/api/users'),
+
+  getUserById: (id) => fetchAPI(`/api/users/${id}`),
+
+  updateUserRole: (id, role) =>
+    fetchAPI(`/api/users/${id}/role`, {
       method: 'PUT',
       body: JSON.stringify({ role })
     }),
+
   // ==========================================
   // LIBROS
   // ==========================================
 
-  getLibros: () => fetchAPI('/libros'),
+  getLibros: () => fetchAPI('/api/libros'),
 
-  getLibroById: (id) => fetchAPI(`/libros/${id}`),
+  getLibroById: (id) => fetchAPI(`/api/libros/${id}`),
 
   createLibro: (libro) =>
-    fetchAPI('/libros', {
+    fetchAPI('/api/libros', {
       method: 'POST',
       body: JSON.stringify(libro)
     }),
 
   updateLibro: (id, updates) =>
-    fetchAPI(`/libros/${id}`, {
+    fetchAPI(`/api/libros/${id}`, {
       method: 'PUT',
       body: JSON.stringify(updates)
     }),
 
   deleteLibro: (id) =>
-    fetchAPI(`/libros/${id}`, {
+    fetchAPI(`/api/libros/${id}`, {
       method: 'DELETE'
     }),
 
   searchLibros: (query) =>
-    fetchAPI(`/libros/search?q=${encodeURIComponent(query)}`),
+    fetchAPI(`/api/libros/search?q=${encodeURIComponent(query)}`),
 
   // ==========================================
   // PRÉSTAMOS
   // ==========================================
 
   getPrestamos: (devuelto) =>
-    fetchAPI(`/prestamos${devuelto !== undefined ? `?devuelto=${devuelto}` : ''}`),
+    fetchAPI(`/api/prestamos${devuelto !== undefined ? `?devuelto=${devuelto}` : ''}`),
 
   createPrestamo: (prestamo) =>
-    fetchAPI('/prestamos', {
+    fetchAPI('/api/prestamos', {
       method: 'POST',
       body: JSON.stringify(prestamo)
     }),
 
   devolverPrestamo: (id) =>
-    fetchAPI(`/prestamos/${id}/devolver`, {
+    fetchAPI(`/api/prestamos/${id}/devolver`, {
       method: 'PUT'
     }),
 
   getPrestamosVencidos: () =>
-    fetchAPI('/prestamos/vencidos'),
+    fetchAPI('/api/prestamos/vencidos'),
 
   deletePrestamo: (id) =>
-    fetchAPI(`/prestamos/${id}`, {
+    fetchAPI(`/api/prestamos/${id}`, {
       method: 'DELETE'
     }),
 
@@ -130,31 +176,31 @@ export const api = {
 
   getMultas: (filters = {}) => {
     const params = new URLSearchParams(filters).toString()
-    return fetchAPI(`/multas${params ? `?${params}` : ''}`)
+    return fetchAPI(`/api/multas${params ? `?${params}` : ''}`)
   },
 
   createMulta: (multa) =>
-    fetchAPI('/multas', {
+    fetchAPI('/api/multas', {
       method: 'POST',
       body: JSON.stringify(multa)
     }),
 
   pagarMulta: (id) =>
-    fetchAPI(`/multas/${id}/pagar`, {
+    fetchAPI(`/api/multas/${id}/pagar`, {
       method: 'PUT'
     }),
 
   getMultasStats: () =>
-    fetchAPI('/multas/stats'),
+    fetchAPI('/api/multas/stats'),
 
   generarMultasAutomaticas: (montoPorDia) =>
-    fetchAPI('/multas/generar-automaticas', {
+    fetchAPI('/api/multas/generar-automaticas', {
       method: 'POST',
       body: JSON.stringify({ monto_por_dia: montoPorDia })
     }),
 
   deleteMulta: (id) =>
-    fetchAPI(`/multas/${id}`, {
+    fetchAPI(`/api/multas/${id}`, {
       method: 'DELETE'
     }),
 }
