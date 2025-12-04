@@ -1,10 +1,9 @@
-import { supabase } from '../config/supabase.js'
+import jwt from 'jsonwebtoken'
 
 /**
- * Middleware para verificar el token de autenticación
- * Extrae el token del header Authorization y verifica su validez
+ * Middleware para verificar el token JWT
  */
-export const authenticateToken = async (req, res, next) => {
+export const authenticateToken = (req, res, next) => {
   try {
     // Obtener el token del header Authorization
     const authHeader = req.headers.authorization
@@ -16,38 +15,19 @@ export const authenticateToken = async (req, res, next) => {
       })
     }
 
-    // Verificar el token con Supabase
-    const { data: { user }, error } = await supabase.auth.getUser(token)
+    // Verificar el token con JWT
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(403).json({ 
+          error: 'Token inválido o expirado' 
+        })
+      }
 
-    if (error || !user) {
-      return res.status(401).json({ 
-        error: 'Token inválido o expirado' 
-      })
-    }
+      // Adjuntar la información del usuario al request
+      req.user = decoded
 
-    // Obtener información adicional del usuario desde la tabla users
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', user.email)
-      .single()
-
-    if (userError || !userData) {
-      return res.status(401).json({ 
-        error: 'Usuario no encontrado en el sistema' 
-      })
-    }
-
-    // Adjuntar la información del usuario al request
-    req.user = {
-      id: userData.id,
-      email: userData.email,
-      name: userData.name,
-      role: userData.role,
-      avatarUrl: userData.avatar_url
-    }
-
-    next()
+      next()
+    })
   } catch (error) {
     console.error('Error en authenticateToken:', error)
     return res.status(500).json({ 
@@ -58,7 +38,6 @@ export const authenticateToken = async (req, res, next) => {
 
 /**
  * Middleware para verificar que el usuario tiene rol de ADMIN
- * Debe usarse después de authenticateToken
  */
 export const requireAdmin = (req, res, next) => {
   if (!req.user) {
@@ -78,7 +57,6 @@ export const requireAdmin = (req, res, next) => {
 
 /**
  * Middleware para verificar que el usuario está autenticado
- * Versión más ligera que solo verifica que existe req.user
  */
 export const requireAuth = (req, res, next) => {
   if (!req.user) {
