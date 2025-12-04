@@ -9,6 +9,9 @@ import authRoutes from './routes/authRoutes.js'
 import maestrosRoutes from './routes/maestrosRoutes.js'
 import movementsRoutes from './routes/movementsRoutes.js'
 import usersRoutes from './routes/usersRoutes.js'
+import librosRoutes from './routes/librosRoutes.js'
+import prestamosRoutes from './routes/prestamosRoutes.js'
+import multasRoutes from './routes/multasRoutes.js'
 
 // Cargar variables de entorno
 dotenv.config()
@@ -64,6 +67,9 @@ app.use('/api/auth', authRoutes)
 app.use('/api/maestros', maestrosRoutes)
 app.use('/api/movements', movementsRoutes)
 app.use('/api/users', usersRoutes)
+app.use('/api/libros', librosRoutes)
+app.use('/api/prestamos', prestamosRoutes)
+app.use('/api/multas', multasRoutes)
 
 // Ruta para manejar rutas no encontradas
 app.use('*', (req, res) => {

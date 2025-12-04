@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/context/AuthContext"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { BarChart3, Users, FolderOpen, LogOut } from "lucide-react"
+import { BarChart3, Users, FolderOpen, BookOpen, Handshake, AlertTriangle, LogOut } from "lucide-react"
 
 const navigationItems = [
   {
@@ -18,6 +18,24 @@ const navigationItems = [
     name: "Maestros",
     href: "/maestros",
     icon: FolderOpen,
+    roles: ["ADMIN", "USER"],
+  },
+  {
+    name: "Inventario de Libros",
+    href: "/libros",
+    icon: BookOpen,
+    roles: ["ADMIN", "USER"],
+  },
+  {
+    name: "Préstamos",
+    href: "/prestamos",
+    icon: Handshake,
+    roles: ["ADMIN", "USER"],
+  },
+  {
+    name: "Multas",
+    href: "/multas",
+    icon: AlertTriangle,
     roles: ["ADMIN", "USER"],
   },
   {
