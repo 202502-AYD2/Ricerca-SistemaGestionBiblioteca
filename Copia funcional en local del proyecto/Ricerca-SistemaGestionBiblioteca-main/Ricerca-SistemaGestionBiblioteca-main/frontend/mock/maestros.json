@@ -1,0 +1,23 @@
+[
+  {
+    "id": "1",
+    "nombre": "Biblioteca Central",
+    "saldo": 15000,
+    "creadoPor": "Carlos Rodríguez",
+    "createdAt": "2024-01-15T10:00:00Z"
+  },
+  {
+    "id": "2",
+    "nombre": "Sucursal Norte",
+    "saldo": 8500,
+    "creadoPor": "Carlos Rodríguez",
+    "createdAt": "2024-02-01T11:30:00Z"
+  },
+  {
+    "id": "3",
+    "nombre": "Biblioteca Infantil",
+    "saldo": 5200,
+    "creadoPor": "María González",
+    "createdAt": "2024-03-15T16:45:00Z"
+  }
+]

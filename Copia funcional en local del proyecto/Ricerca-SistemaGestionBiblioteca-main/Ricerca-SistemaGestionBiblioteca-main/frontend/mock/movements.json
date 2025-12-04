@@ -1,0 +1,65 @@
+[
+  {
+    "id": "1",
+    "maestroId": "1",
+    "maestroNombre": "Biblioteca Central",
+    "tipo": "ENTRADA",
+    "cantidad": 5000,
+    "responsable": "Carlos Rodríguez",
+    "fecha": "2024-11-01T10:00:00Z"
+  },
+  {
+    "id": "2",
+    "maestroId": "1",
+    "maestroNombre": "Biblioteca Central",
+    "tipo": "SALIDA",
+    "cantidad": 1500,
+    "responsable": "María González",
+    "fecha": "2024-11-05T14:30:00Z"
+  },
+  {
+    "id": "3",
+    "maestroId": "2",
+    "maestroNombre": "Sucursal Norte",
+    "tipo": "ENTRADA",
+    "cantidad": 3000,
+    "responsable": "Juan Pérez",
+    "fecha": "2024-11-10T09:15:00Z"
+  },
+  {
+    "id": "4",
+    "maestroId": "1",
+    "maestroNombre": "Biblioteca Central",
+    "tipo": "ENTRADA",
+    "cantidad": 2000,
+    "responsable": "Carlos Rodríguez",
+    "fecha": "2024-11-15T11:00:00Z"
+  },
+  {
+    "id": "5",
+    "maestroId": "3",
+    "maestroNombre": "Biblioteca Infantil",
+    "tipo": "SALIDA",
+    "cantidad": 800,
+    "responsable": "María González",
+    "fecha": "2024-11-20T15:45:00Z"
+  },
+  {
+    "id": "6",
+    "maestroId": "2",
+    "maestroNombre": "Sucursal Norte",
+    "tipo": "ENTRADA",
+    "cantidad": 1500,
+    "responsable": "Juan Pérez",
+    "fecha": "2024-11-25T10:30:00Z"
+  },
+  {
+    "id": "7",
+    "maestroId": "1",
+    "maestroNombre": "Biblioteca Central",
+    "tipo": "SALIDA",
+    "cantidad": 2500,
+    "responsable": "Carlos Rodríguez",
+    "fecha": "2024-11-28T13:20:00Z"
+  }
+]

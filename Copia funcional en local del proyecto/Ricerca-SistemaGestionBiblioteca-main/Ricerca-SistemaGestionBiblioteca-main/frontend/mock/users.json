@@ -1,0 +1,29 @@
+[
+  {
+    "id": "1",
+    "email": "admin@biblioteca.com",
+    "password": "admin123",
+    "name": "Carlos Rodríguez",
+    "role": "ADMIN",
+    "avatarUrl": "/placeholder.svg?height=80&width=80",
+    "createdAt": "2024-01-15T10:00:00Z"
+  },
+  {
+    "id": "2",
+    "email": "user@biblioteca.com",
+    "password": "user123",
+    "name": "María González",
+    "role": "USER",
+    "avatarUrl": "/placeholder.svg?height=80&width=80",
+    "createdAt": "2024-02-20T14:30:00Z"
+  },
+  {
+    "id": "3",
+    "email": "bibliotecario@biblioteca.com",
+    "password": "bib123",
+    "name": "Juan Pérez",
+    "role": "USER",
+    "avatarUrl": "/placeholder.svg?height=80&width=80",
+    "createdAt": "2024-03-10T09:15:00Z"
+  }
+]
