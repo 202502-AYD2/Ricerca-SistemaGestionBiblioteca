@@ -42,17 +42,19 @@ export const login = async (req, res) => {
       })
     }
 
-    // Retornar token y datos del usuario (formato correcto para el frontend)
+    // Retornar token y datos del usuario
     return res.status(200).json({
       success: true,
-      token: authData.session.access_token,
-      refreshToken: authData.session.refresh_token,
-      user: {
-        id: userData.id,
-        email: userData.email,
-        name: userData.name,
-        role: userData.role,
-        avatarUrl: userData.avatar_url
+      data: {
+        token: authData.session.access_token,
+        refreshToken: authData.session.refresh_token,
+        user: {
+          id: userData.id,
+          email: userData.email,
+          name: userData.name,
+          role: userData.role,
+          avatarUrl: userData.avatar_url
+        }
       }
     })
   } catch (error) {
@@ -135,8 +137,10 @@ export const refreshToken = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      token: data.session.access_token,
-      refreshToken: data.session.refresh_token
+      data: {
+        token: data.session.access_token,
+        refreshToken: data.session.refresh_token
+      }
     })
   } catch (error) {
     console.error('Error en refreshToken:', error)
