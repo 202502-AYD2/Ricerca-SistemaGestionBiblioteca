@@ -10,7 +10,7 @@ Andres Felipe Bernal Molina - C.C. 1023624342
 
 Juan Pablo Herrera Jaramillo - C.C. 1022143677
 
-
+Video del sistema funcionando: https://drive.google.com/drive/folders/1BKXQbjoXUg7hGSCeRaHYyKS2Fyzisnlp?usp=sharing
 Sistema completo con Backend (Node.js + Express), Frontend (Next.js), y Base de Datos (Supabase/PostgreSQL).
 
 ## 📦 Contenido del Paquete
